@@ -18,23 +18,23 @@ feature "Module #2 Aggregation Framework Tests" do
 
     around :each do |example|
         if $continue
-            $continue = false 
-            example.run 
+            $continue = false
+            example.run
             $continue = true unless example.exception
         else
             example.skip
         end
     end
 
-    context "rq01" do 
+    context "rq01" do
       it "Place Model has a class method called get_address_components" do
         expect(Place).to respond_to(:get_address_components)
       end
-      
-      it "get_address_components method takes 3 optional parameters for sort, offset and limit" do 
+
+      it "get_address_components method takes 3 optional parameters for sort, offset and limit" do
         expect((Place.method(:get_address_components).parameters.flatten - [:opt, :req]).count).to eq 3
-        expect(Place.method(:get_address_components).parameters.flatten).to include(:opt) 
-        expect(Place.method(:get_address_components).parameters.flatten).to_not include(:req) 
+        expect(Place.method(:get_address_components).parameters.flatten).to include(:opt)
+        expect(Place.method(:get_address_components).parameters.flatten).to_not include(:req)
       end
 
       it "get_address_components returns expected type and results" do
@@ -68,19 +68,19 @@ feature "Module #2 Aggregation Framework Tests" do
         expect(off_result.to_a[0][:_id]).to eq (base_result.to_a[offset][:_id])
         # test order
         current_Id = BSON::ObjectId('FFFFFFFFFFFFFFFFFFFFFFFF')
-        base_result.each { |b| 
+        base_result.each { |b|
           expect(b[:_id]).to be <= current_Id
           current_Id = b[:_id]
         }
-      end    
+      end
     end
 
-    context "rq02" do 
+    context "rq02" do
       it "Place Model has a class method called get_country_names" do
         expect(Place).to respond_to(:get_country_names)
       end
-      
-      it "get_country_names method takes no arguments" do 
+
+      it "get_country_names method takes no arguments" do
         expect((Place.method(:get_country_names).parameters.flatten - [:opt, :req]).count).to eq 0
       end
 
@@ -107,21 +107,21 @@ feature "Module #2 Aggregation Framework Tests" do
         expect(test_result).to_not be_nil
         expect(test_result).to be_a Array
         expect(test_result.count).to eq raw_ac_count.count
-        test_result.each { |r| 
+        test_result.each { |r|
           expect(raw_ac_count).to include(r)
         }
-      end    
+      end
     end
 
-    context "rq03" do 
+    context "rq03" do
       it "Place Model has a class method called find_ids_by_country_code" do
         expect(Place).to respond_to(:find_ids_by_country_code)
       end
-      
-      it "find_ids_by_country_code method takes a single country_code argument" do 
+
+      it "find_ids_by_country_code method takes a single country_code argument" do
         expect((Place.method(:find_ids_by_country_code).parameters.flatten - [:opt, :req]).count).to eq 1
-        expect(Place.method(:find_ids_by_country_code).parameters.flatten).to include(:req) 
-        expect(Place.method(:find_ids_by_country_code).parameters.flatten).to_not include(:opt)         
+        expect(Place.method(:find_ids_by_country_code).parameters.flatten).to include(:req)
+        expect(Place.method(:find_ids_by_country_code).parameters.flatten).to_not include(:opt)
       end
 
       it "find_ids_by_country_code returns expected type and result" do
@@ -148,5 +148,5 @@ feature "Module #2 Aggregation Framework Tests" do
         }
         expect(test_arr.count).to eq results.count
       end
-    end    
+    end
   end

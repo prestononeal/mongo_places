@@ -27,4 +27,18 @@ class Place
     data_hash = JSON.parse data_stream
     collection.insert_many data_hash
   end
+
+  # Convenience method for retrieving address_components from the collection
+  #  * sort (optional):
+  #  * offset (optional): document number to start results
+  #  * limit (optional): number of documents to include
+  def self.get_address_components(sort=nil, offset=nil, limit=nil)
+    aggs = []
+    aggs << {:$unwind=>"$address_components"}
+    aggs << {:$project=>{:_id=>1, :address_components=>1, :formatted_address=>1, "geometry.geolocation": 1}}
+    aggs << {:$sort=>sort} if !sort.nil?
+    aggs << {:$skip=>offset} if !offset.nil?
+    aggs << {:$limit=>limit} if !limit.nil?
+    collection.find().aggregate(aggs)
+  end
 end

@@ -40,7 +40,8 @@ class Place
 
   # Finds a place in the DB by ID and returns an initialized Place object for it
   def self.find(id)
-    pl = collection.find({:_id=>BSON::ObjectId.from_string(id)})
+    id = BSON::ObjectId.from_string(id) if id.is_a? String
+    pl = collection.find({:_id=>id})
     Place.new(pl.first) unless pl.count == 0
   end
 

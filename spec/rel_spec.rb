@@ -14,23 +14,23 @@ feature "Module #2 Relationship Tests" do
       Place.collection.delete_many
       Place.load_all(File.open("./db/places.json"))
       #clear grid fs db
-      Photo.mongo_client.database.fs.find.each { |p| 
+      Photo.mongo_client.database.fs.find.each { |p|
         Photo.mongo_client.database.fs.find(:_id=>p[:_id]).delete_one
       }
       #reload db with application images
       (1..6).each { |n|
-        p = Photo.new 
+        p = Photo.new
         f = File.open("./db/image#{n}.jpg",'rb')
         p.contents = f
         id = p.save
-      }    
+      }
 
     end
 
     around :each do |example|
         if $continue
-            $continue = false 
-            example.run 
+            $continue = false
+            example.run
             $continue = true unless example.exception
         else
             example.skip
@@ -46,12 +46,12 @@ feature "Module #2 Relationship Tests" do
     it "Photo Model has an intance method called find_nearest_place_id" do
       expect(@photo).to respond_to(:find_nearest_place_id)
     end
-      
+
     it "find_nearest_place_id method takes one arguments for max distance in meters" do
       expect((@photo.method(:find_nearest_place_id).parameters.flatten - [:opt, :req]).count).to eq 1
       expect(@photo.method(:find_nearest_place_id).parameters.flatten).to include(:req)
       expect(@photo.method(:find_nearest_place_id).parameters.flatten).to_not include(:opt)
-    end    
+    end
 
     it "find_nearest_place_id returns expected type and result" do
       max_d = 1069.4 * 1000
@@ -71,22 +71,22 @@ feature "Module #2 Relationship Tests" do
       result = sample_photo.find_nearest_place_id(max_d)
       expect(result.nil? || result.is_a?(BSON::ObjectId)).to be true
       expect(result.nil? || result.to_s == bf_place.id).to be true
-    end    
+    end
   end
 
   context "rq02" do
     before :all do
       @photo = Photo.new
-    end  
+    end
 
-    it "Photo instance method save, saves object if not already persitsed" do 
+    it "Photo instance method save, saves object if not already persitsed" do
       # Test to see if it persists new object
       f = File.open('./db/image1.jpg','rb')
       test = EXIFR::JPEG.new(f).gps
       f.rewind
       @photo.contents = f
       expect(@photo.persisted?).to be false
-      @id=@photo.save      
+      @id=@photo.save
       expect(@id).to_not be_nil
       expect(@photo.persisted?).to be true
       expect(@photo.location.latitude).to eq test.latitude
@@ -98,7 +98,7 @@ feature "Module #2 Relationship Tests" do
       expect(metaData[:metadata][:location][:coordinates][1]).to eq test.latitude
     end
 
-    it "Photo instance method save, updates object if already persisted" do      
+    it "Photo instance method save, updates object if already persisted" do
       # Change an already persisted object and call save
       record = Photo.all.sample
       id = record.id
@@ -115,7 +115,7 @@ feature "Module #2 Relationship Tests" do
   context "rq03" do
     before :all do
       @photo = Photo.new
-    end  
+    end
 
     it "There exists a many to one relationship between Place and Photo" do
       photo = Photo.all.sample
@@ -137,7 +137,7 @@ feature "Module #2 Relationship Tests" do
       expect(db_photo.place.address_components.count).to eq place_obj.address_components.count
       db_photo.place.address_components.each { |ac|
          expect(contains_address_component?(place_obj.address_components, ac)).to be true
-      } 
+      }
       # check to see that BSON object includes place under metadata
       bson_photo = Photo.mongo_client.database.fs.find(:_id=>BSON::ObjectId(photo_id)).first
       expect(bson_photo[:metadata][:place]).to eq place_id
@@ -149,12 +149,12 @@ feature "Module #2 Relationship Tests" do
     it "Photo Model has a class method called find_photos_for_place" do
       expect(Photo).to respond_to(:find_photos_for_place)
     end
-      
+
     it "find_photos_for_place method takes one arguments for the id of the place of interest" do
       expect((Photo.method(:find_photos_for_place).parameters.flatten - [:opt, :req]).count).to eq 1
       expect(Photo.method(:find_photos_for_place).parameters.flatten).to include(:req)
       expect(Photo.method(:find_photos_for_place).parameters.flatten).to_not include(:opt)
-    end    
+    end
 
     it "find_photos_for_place returns expected type and result" do
       # Set constant for test place and get its id
@@ -162,7 +162,7 @@ feature "Module #2 Relationship Tests" do
       place_id = place.id
       alternate = true
       p_list = []
-      Photo.all.each { |photo| 
+      Photo.all.each { |photo|
         if alternate then
           photo.place = place
           photo.save
@@ -186,7 +186,7 @@ feature "Module #2 Relationship Tests" do
         expect(r).to be_a BSON::Document
         expect(p_list).to include(r[:_id].to_s)
       }
-    end    
+    end
   end
 
   context "rq05" do
@@ -197,19 +197,19 @@ feature "Module #2 Relationship Tests" do
     it "Place Model has an intance method called photos" do
       expect(@place).to respond_to(:photos)
     end
-      
+
     it "photos method takes one arguments for the id of the place of interest" do
       expect((@place.method(:photos).parameters.flatten - [:opt, :req]).count).to eq 2
       expect(@place.method(:photos).parameters.flatten).to include(:opt)
       expect(@place.method(:photos).parameters.flatten).to_not include(:req)
-    end    
+    end
 
     it "photos method without parameters returns expected type and result" do
       # Set constant for test place and get its id
       place = Place.all.sample
       place_id = place.id
       p_list = []
-      Photo.all.each { |photo| 
+      Photo.all.each { |photo|
         photo.place = place
         photo.save
         p_list.push(photo.id)
@@ -225,12 +225,12 @@ feature "Module #2 Relationship Tests" do
         expect(rplace.id).to eq (place.id)
         expect(rplace.formatted_address).to eq (place.formatted_address)
         expect(rplace.location.latitude).to eq (place.location.latitude)
-        expect(rplace.location.longitude).to eq (place.location.longitude)   
+        expect(rplace.location.longitude).to eq (place.location.longitude)
         expect(rplace.address_components.count).to eq (place.address_components.count)
         rplace.address_components.each{ |ac|
           expect(contains_address_component?(place.address_components, ac)).to be true
-        }     
+        }
       }
-    end    
+    end
   end
 end

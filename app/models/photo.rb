@@ -7,10 +7,16 @@ class Photo
   def initialize(params=nil)
     return if params.nil?
     @id = params[:_id].to_s
-    if !params[:metadata].nil? and !params[:metadata][:location].nil?
-      @location = Point.new(params[:metadata][:location])
+    if !params[:metadata].nil?
+      if !params[:metadata][:location].nil?
+        @location = Point.new(params[:metadata][:location])
+      end
+      if !params[:metadata][:place].nil?
+        @place = params[:metadata][:place]
+      end
     else
       @location = nil
+      @place = nil
     end
   end
 
@@ -27,6 +33,12 @@ class Photo
   # Saves this Photo instance into GridFS
   def save
     if self.persisted?
+      # Just update the metadata
+      ph = self.class.mongo_client.database.fs.find({:_id=>BSON::ObjectId.from_string(@id)})
+      ph.update_one(
+        {:metadata=>
+          {:location=>@location.to_hash, :place=>@place}
+        }) if ph.count == 1
       return
     end
 
@@ -42,6 +54,7 @@ class Photo
     description[:content_type] = "image/jpeg"
     description[:metadata] = {}
     description[:metadata][:location] = @location.to_hash
+    description[:metadata][:place] = @place
 
     # Save the file
     grid_file = Mongo::Grid::File.new(@contents.read, description)
@@ -85,6 +98,25 @@ class Photo
   def find_nearest_place_id(max_distance)
     near = Place.near(@location, max_distance)
     near = near.limit(1)
-    near.projection({:_id=>1}) if near.count == 1
+    near.projection({:_id=>1}).first[:_id]
+  end
+
+  # Custom getter for place attribute
+  def place
+    Place.find(@place) if !@place.nil?
+  end
+
+  # Custom setter for place attribute
+  def place=(value)
+    case value
+    when String
+      @place = BSON::ObjectId.from_string(value)
+    when BSON::ObjectId
+      @place = value
+    when Place
+      @place = BSON::ObjectId.from_string(value.id)
+    else
+      @place = nil
+    end
   end
 end

@@ -57,4 +57,27 @@ class Photo
     phs = phs.limit(limit) if !limit.nil?
     phs.map { |ph| Photo.new(ph) }
   end
+
+  # Finds a photo in the DB by ID and returns an initialized Photo object for it
+  def self.find(id)
+    ph = mongo_client.database.fs.find({:_id=>BSON::ObjectId.from_string(id)})
+    Photo.new(ph.first) unless ph.count == 0
+  end
+
+  # Returns the data contents of a file
+  def contents
+    f = self.class.mongo_client.database.fs.find_one({:_id=>BSON::ObjectId.from_string(@id)})
+    if f
+      buffer = ""
+      f.chunks.reduce([]) do |x, chunk|
+        buffer << chunk.data.data
+      end
+      return buffer
+    end
+  end
+
+  # Destroys the photo associated with this Photo's id
+  def destroy
+    self.class.mongo_client.database.fs.find(:_id=>BSON::ObjectId.from_string(@id)).delete_one
+  end
 end

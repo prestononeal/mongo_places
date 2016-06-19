@@ -2,6 +2,10 @@ require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
 
+# Require custom classes. Do this here so that the rspec tests find it without using requires
+require './lib/point.rb'
+require './lib/addresscomponent.rb'
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)

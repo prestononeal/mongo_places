@@ -49,4 +49,12 @@ class Photo
     @id = id.to_s
     @id
   end
+
+  # Return an instance of all pictures as Photo instances
+  def self.all(offset=nil, limit=nil)
+    phs = mongo_client.database.fs.find()
+    phs = phs.skip(offset) if !offset.nil?
+    phs = phs.limit(limit) if !limit.nil?
+    phs.map { |ph| Photo.new(ph) }
+  end
 end

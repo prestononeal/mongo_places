@@ -41,4 +41,16 @@ class Place
     aggs << {:$limit=>limit} if !limit.nil?
     collection.find().aggregate(aggs)
   end
+
+  # Returns a distinct collection of country names (long_names)
+  def self.get_country_names
+    aggs = []
+    aggs << {:$project=>{"address_components.long_name": 1, "address_components.types": 1}}
+    aggs << {:$unwind=>"$address_components"}
+    aggs << {:$unwind=>"$address_components.types"}
+    aggs << {:$match=>{"address_components.types": "country"}}
+    aggs << {:$group=>{:_id=>"$address_components.long_name"}}
+    countries = collection.find().aggregate(aggs)
+    countries.to_a.map {|c| c[:_id]}
+  end
 end

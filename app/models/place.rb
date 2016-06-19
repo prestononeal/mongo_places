@@ -53,4 +53,15 @@ class Place
     countries = collection.find().aggregate(aggs)
     countries.to_a.map {|c| c[:_id]}
   end
+
+  # Returns the ID of each document in the places collection that has an
+  # address_component.short_name of type country and matches the provided param
+  def self.find_ids_by_country_code(country_code)
+    aggs = []
+    aggs << {:$match=>{"address_components.types": "country",
+      "address_components.short_name": country_code}}
+    aggs << {:$project=>{:_id=>1}}
+    ids = collection.find().aggregate(aggs)
+    ids.to_a.map {|i| i[:_id].to_s}
+  end
 end

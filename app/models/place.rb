@@ -1,5 +1,6 @@
 class Place
   include Mongoid::Document
+  include ActiveModel::Model
 
   attr_accessor :id, :location, :address_components, :formatted_address
 
@@ -18,6 +19,11 @@ class Place
   # Convenience method for accessing the "places" collection
   def self.collection
     self.mongo_client['places']
+  end
+
+  # Returns true if the Place object has been saved in the db
+  def persisted?
+    !@id.nil?
   end
 
   # Accept a JSON file IO object and load its contents

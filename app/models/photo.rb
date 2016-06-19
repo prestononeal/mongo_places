@@ -73,8 +73,16 @@ class Photo
 
   # Finds a photo in the DB by ID and returns an initialized Photo object for it
   def self.find(id)
+    id = BSON::ObjectId.from_string(id) if id.is_a? String
     ph = mongo_client.database.fs.find({:_id=>BSON::ObjectId.from_string(id)})
     Photo.new(ph.first) unless ph.count == 0
+  end
+
+  # Accepts a BSON::ObjectId of a Place and returns a collection view of photo
+  # documents that have the foreign key reference
+  def self.find_photos_for_place(place_id)
+    place_id = BSON::ObjectId.from_string(place_id) if place_id.is_a? String
+    mongo_client.database.fs.find({"metadata.place": place_id})
   end
 
   # Returns the data contents of a file

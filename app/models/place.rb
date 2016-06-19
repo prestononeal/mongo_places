@@ -5,7 +5,7 @@ class Place
 
   def initialize params
     @id = params[:_id].to_s
-    @address_components = params[:address_components].map { |x| AddressComponent.new(x)}
+    @address_components = params[:address_components].map { |x| AddressComponent.new(x) } if params[:address_components]
     @formatted_address = params[:formatted_address]
     @location = Point.new(params[:geometry][:geolocation])
   end
@@ -114,8 +114,8 @@ class Place
     })
   end
 
-  # Finds places near this Point
+  # Finds places near this Place's location
   def near(max_meters=nil)
-    self.class.near(self, max_meters)
+    Place.to_places(self.class.near(@location, max_meters))
   end
 end

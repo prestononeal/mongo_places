@@ -3,7 +3,7 @@ class Place
 
   attr_accessor :id, :location, :address_components, :formatted_address
 
-  def initialize params
+  def initialize(params)
     @id = params[:_id].to_s
     @address_components = params[:address_components].map { |x| AddressComponent.new(x) } if params[:address_components]
     @formatted_address = params[:formatted_address]
@@ -21,7 +21,7 @@ class Place
   end
 
   # Accept a JSON file IO object and load its contents
-  def self.load_all file
+  def self.load_all(file)
     Rails.logger.debug "Loading file into db"
     data_stream = file.read
     data_hash = JSON.parse data_stream

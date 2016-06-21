@@ -1,6 +1,9 @@
+require './lib/addresscomponent.rb'
+require './lib/point.rb'
+
 class Place
-  include Mongoid::Document
   include ActiveModel::Model
+  include Mongoid::Document
 
   attr_accessor :id, :location, :address_components, :formatted_address
 

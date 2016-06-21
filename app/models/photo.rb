@@ -1,3 +1,5 @@
+require './lib/point.rb'
+
 class Photo
   include Mongoid::Document
 
